@@ -194,7 +194,8 @@
     "package": "vsce package --no-dependencies",
     "publish:vsce": "vsce publish --no-dependencies",
     "publish:ovsx": "ovsx publish --no-dependencies",
-    "harness": "node test/browser/serve.mjs"
+    "harness": "node test/browser/serve.mjs",
+    "showcase": "node esbuild.mjs && node test/integration/showcase.mjs"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
