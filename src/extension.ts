@@ -13,7 +13,8 @@ import { BulkPublishTree, TreeNode } from "./sidebar";
  */
 export async function markdownPrefill(text: string, docUri: vscode.Uri | undefined, downloads?: vscode.Uri): Promise<Prefill> {
 	const md = parseMarkdownShare(text);
-	const prefill: Prefill = { caption: captionFromMarkdown(md) };
+	// Every share starts from nothing attached, so an earlier share's file never rides along.
+	const prefill: Prefill = { caption: captionFromMarkdown(md), attachment: null };
 	if (md.image) {
 		if (/^[a-z]+:\/\//i.test(md.image)) {
 			const got = downloads ? await downloadImage(md.image) : "The first image is on the web, so it wasn't attached.";
@@ -84,7 +85,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 		const ed = vscode.window.activeTextEditor;
 		const text = ed ? ed.selections.map((s) => ed.document.getText(s)).join("\n").trim() : "";
 		if (!text) { void vscode.window.showWarningMessage("Select some text to share first."); return; }
-		compose({ caption: text });
+		compose({ caption: text, attachment: null });
 	});
 	cmd("bulkpublish.shareFile", async (uri?: vscode.Uri) => {
 		const target = uri ?? vscode.window.activeTextEditor?.document.uri;
@@ -97,7 +98,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 			);
 			compose(prefill);
 		} else {
-			compose({ caption: doc.getText().trim() });
+			compose({ caption: doc.getText().trim(), attachment: null });
 		}
 	});
 

@@ -13,12 +13,21 @@ export class Session {
 		secrets.onDidChange((e) => { if (e.key === SECRET) this.changed.fire(); });
 	}
 
+	/**
+	 * Both addresses receive the API key, so they are read from the user's own
+	 * settings only. A value in a project's .vscode/settings.json is ignored: a
+	 * cloned repository must never be able to send the key somewhere else.
+	 */
+	private userSetting(name: string): string | undefined {
+		return vscode.workspace.getConfiguration("bulkpublish").inspect<string>(name)?.globalValue;
+	}
+
 	get apiBase(): string {
-		return normalizeApiBase(vscode.workspace.getConfiguration("bulkpublish").get("apiUrl"));
+		return normalizeApiBase(this.userSetting("apiUrl"));
 	}
 
 	get mcpUrl(): string {
-		const v = vscode.workspace.getConfiguration("bulkpublish").get<string>("assistantServerUrl");
+		const v = this.userSetting("assistantServerUrl");
 		try { return v && new URL(v).protocol === "https:" ? v : DEFAULT_MCP_URL; } catch { return DEFAULT_MCP_URL; }
 	}
 

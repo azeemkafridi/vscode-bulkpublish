@@ -4,3 +4,4 @@ out/
 .vscode-test/
 *.vsix
 test/fixtures/workspace/.downloads-test/
+test/fixtures/workspace/.vscode/

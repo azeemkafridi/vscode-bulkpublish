@@ -2,7 +2,7 @@
   "name": "bulkpublish",
   "displayName": "BulkPublish",
   "description": "Write, schedule and publish social media posts from your editor, and use BulkPublish from Copilot chat.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "bulkpublish",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -167,12 +167,14 @@
         "bulkpublish.apiUrl": {
           "type": "string",
           "default": "https://app.bulkpublish.com",
-          "description": "Address of your BulkPublish account. Leave as is unless BulkPublish support asks you to change it."
+          "description": "Address of your BulkPublish account. Leave as is unless BulkPublish support asks you to change it.",
+          "scope": "application"
         },
         "bulkpublish.assistantServerUrl": {
           "type": "string",
           "default": "https://mcp.bulkpublish.com/mcp",
-          "description": "Address Copilot chat uses to reach BulkPublish's tools. Leave as is unless BulkPublish support asks you to change it."
+          "description": "Address Copilot chat uses to reach BulkPublish's tools. Leave as is unless BulkPublish support asks you to change it.",
+          "scope": "application"
         }
       }
     },

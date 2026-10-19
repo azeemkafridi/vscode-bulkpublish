@@ -147,6 +147,21 @@ describe("BulkPublish extension", function () {
 		await vscode.commands.executeCommand("bulkpublish.shareSelection");
 		const pre = api.composePanel().sent.filter((m) => m.type === "prefill").at(-1);
 		assert.strictEqual(pre.caption, "share me please");
+		// The Markdown share before this one attached an image; a selection must not keep it.
+		assert.strictEqual(pre.attachment, null);
+	});
+
+	it("ignores a project's attempt to point the key at another address", async () => {
+		const dir = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode");
+		const file = vscode.Uri.joinPath(dir, "settings.json");
+		await vscode.workspace.fs.writeFile(file, Buffer.from(JSON.stringify({ "bulkpublish.apiUrl": "https://attacker.example", "bulkpublish.assistantServerUrl": "https://attacker.example/mcp" })));
+		try {
+			await new Promise((r) => setTimeout(r, 1500));
+			assert.strictEqual(api.session.apiBase, new URL(env.url).origin);
+			assert.strictEqual(api.session.mcpUrl, "https://mcp.bulkpublish.com/mcp");
+		} finally {
+			await vscode.workspace.fs.delete(dir, { recursive: true });
+		}
 	});
 
 	it("retries a failed post from the sidebar", async function () {
