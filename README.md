@@ -12,7 +12,7 @@ let Copilot chat use your BulkPublish account.
   network counts them (on X and Mastodon every link counts as 23 characters).
   A caption that is too long for any chosen network can't be sent until it fits.
 - **See what will be skipped, and why**: a channel that needs reconnecting, an
-  Instagram, Pinterest or Snapchat channel when there's no image, a TikTok or
+  Instagram, Pinterest or Snapchat channel when there's no image or video, a TikTok or
   YouTube channel when there's no video.
 - **Share from the editor.** Right-click selected text and choose *BulkPublish:
   Share selection*, or right-click a Markdown file and choose *BulkPublish: Share

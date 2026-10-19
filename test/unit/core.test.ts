@@ -14,9 +14,9 @@ describe("channels", () => {
 		const list = [ch(1, "x"), ch(2, "instagram"), ch(3, "tiktok"), ch(4, "x", { isActive: false })];
 		const none = planTargets(list, [1, 2, 3, 4, 99], null);
 		expect(none.targets.map((t) => t.id)).toEqual([1]);
-		expect(none.skipped.map((s) => s.reason)).toEqual(["needs an image", "needs a video", "is turned off in BulkPublish", "is no longer connected"]);
+		expect(none.skipped.map((s) => s.reason)).toEqual(["needs an image or a video", "needs a video", "is turned off in BulkPublish", "is no longer connected"]);
 		expect(planTargets(list, [2, 3], "image").targets.map((t) => t.id)).toEqual([2]);
-		expect(planTargets(list, [2, 3], "video").targets.map((t) => t.id)).toEqual([3]);
+		expect(planTargets(list, [2, 3], "video").targets.map((t) => t.id)).toEqual([2, 3]);
 	});
 });
 
@@ -40,6 +40,10 @@ describe("post body", () => {
 	it("asks Threads for an image post when an image is attached", () => {
 		const b = buildPostBody([ch(1, "threads"), ch(2, "x")], "hi", 7, "image");
 		expect(b).toEqual({ content: "hi", status: "draft", channels: [{ channelId: 1, platform: "threads" }, { channelId: 2, platform: "x" }], mediaFiles: [7], postTypeOverrides: { threads: "image" } });
+	});
+	it("asks Instagram for a reel and Pinterest for a video pin when a video is attached", () => {
+		const b = buildPostBody([ch(1, "instagram"), ch(2, "pinterest"), ch(3, "snapchat"), ch(4, "threads")], "hi", 7, "video");
+		expect(b.postTypeOverrides).toEqual({ instagram: "reel", pinterest: "video_pin" });
 	});
 	it("schedules with scheduledAt + timezone", () => {
 		const b = buildPostBody([ch(1, "x")], "hi", null, null, { scheduledAt: "2030-01-01T09:00:00.000Z", timezone: "UTC" });

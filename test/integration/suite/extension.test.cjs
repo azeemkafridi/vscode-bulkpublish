@@ -86,7 +86,7 @@ describe("BulkPublish extension", function () {
 		const byName = (n) => api.tree.channels.find((c) => c.name.startsWith(n)).id;
 		const res = await panel.send({ caption: "Draft from the editor test", attachment: null, mode: "draft", when: "", timezone: "UTC", targetIds: [byName("Fake X"), byName("Fake Instagram"), byName("Fake Mastodon")] });
 		assert.ok(res.ok, res.text);
-		assert.match(res.text, /Draft saved for Fake X\. Skipped: Fake Instagram \(needs an image\), Fake Mastodon.*\(needs reconnecting in BulkPublish\)/);
+		assert.match(res.text, /Draft saved for Fake X\. Skipped: Fake Instagram \(needs an image or a video\), Fake Mastodon.*\(needs reconnecting in BulkPublish\)/);
 		assert.ok(ids.length >= 5);
 	});
 

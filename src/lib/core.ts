@@ -82,19 +82,26 @@ export function countsFor(text: string, platforms: string[]): Count[] {
 
 // ── Channels and networks ──
 
-/** What each network's default post needs. Networks not listed take text alone. */
-const MEDIA_RULES: Record<string, "image" | "video"> = {
-	instagram: "image",
-	pinterest: "image",
-	snapchat: "image",
-	tiktok: "video",
-	youtube: "video",
+/**
+ * What media each network needs. Networks not listed take text alone. Mirrors
+ * the app's own media rules for each network's default post type, plus the type
+ * we ask for when a video is attached (below).
+ */
+const MEDIA_RULES: Record<string, ("image" | "video")[]> = {
+	instagram: ["image", "video"],
+	pinterest: ["image", "video"],
+	snapchat: ["image", "video"],
+	tiktok: ["video"],
+	youtube: ["video"],
 };
 
-/** Post type to request when an image is attached, where the default type is text-only. */
-const IMAGE_POST_TYPE: Record<string, string> = { threads: "image" };
+/** Post type to request for an attachment the network's default type doesn't take. */
+const POST_TYPE_FOR: Record<"image" | "video", Record<string, string>> = {
+	image: { threads: "image" },
+	video: { instagram: "reel", pinterest: "video_pin" },
+};
 
-export function needs(platform: string): "image" | "video" | null {
+export function needs(platform: string): ("image" | "video")[] | null {
 	return MEDIA_RULES[platform] ?? null;
 }
 
@@ -141,8 +148,10 @@ export function planTargets(channels: Channel[], ids: number[], media: MediaKind
 		const skip = (reason: string) => skipped.push({ channelId: id, platform: c.platform, name: c.name, reason });
 		if (!c.usable) { skip(c.problem ?? "can't be used"); continue; }
 		const need = needs(c.platform);
-		if (need === "video" && media !== "video") { skip("needs a video"); continue; }
-		if (need === "image" && media !== "image") { skip("needs an image"); continue; }
+		if (need && !(media && need.includes(media))) {
+			skip(need.length > 1 ? "needs an image or a video" : `needs ${need[0] === "image" ? "an image" : "a video"}`);
+			continue;
+		}
 		targets.push(c);
 	}
 	return { targets, skipped };
@@ -157,8 +166,11 @@ export function buildPostBody(
 	schedule?: { scheduledAt: string; timezone: string },
 ) {
 	const postTypeOverrides: Record<string, string> = {};
-	if (mediaId !== null && media === "image") {
-		for (const t of targets) if (IMAGE_POST_TYPE[t.platform]) postTypeOverrides[t.platform] = IMAGE_POST_TYPE[t.platform];
+	if (mediaId !== null && media) {
+		for (const t of targets) {
+			const type = POST_TYPE_FOR[media][t.platform];
+			if (type) postTypeOverrides[t.platform] = type;
+		}
 	}
 	return {
 		content,

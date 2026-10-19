@@ -75,7 +75,7 @@ describe("compose form", () => {
 		box(3).click();
 		type("x".repeat(281));
 		expect(document.getElementById("counts")!.textContent).toContain("X 281/280");
-		expect(document.getElementById("skipped")!.textContent).toContain("Gram (Instagram) will be skipped: it needs an image.");
+		expect(document.getElementById("skipped")!.textContent).toContain("Gram (Instagram) will be skipped: it needs an image or a video.");
 		const send = document.getElementById("send") as HTMLButtonElement;
 		expect(send.disabled).toBe(true);
 		type("short and sweet");
