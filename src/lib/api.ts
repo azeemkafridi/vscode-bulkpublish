@@ -19,7 +19,8 @@ export class ApiError extends Error {
 type Fetch = typeof fetch;
 
 export class BulkPublishClient {
-	constructor(private base: string, private key: string, private f: Fetch = fetch) {}
+	// Wrapped so `fetch` is never called detached from its global: browsers throw on that.
+	constructor(private base: string, private key: string, private f: Fetch = (...a) => fetch(...a)) {}
 
 	private async req(method: string, path: string, body?: unknown, raw?: { body: Uint8Array; contentType: string }) {
 		const headers: Record<string, string> = { Authorization: `Bearer ${this.key}`, Accept: "application/json" };

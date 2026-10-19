@@ -26,7 +26,9 @@ export function mount(root: HTMLElement, vscode: VsApi, defaultTz: string) {
 	for (const [v, t] of [["now", "Publish now"], ["schedule", "Schedule"], ["draft", "Save as draft"]]) modeSel.append(el("option", { value: v, textContent: t }));
 	const when = el("input", { id: "when", type: "datetime-local" });
 	const tz = el("input", { id: "timezone", type: "text", spellcheck: false });
-	const scheduleRow = el("div", { className: "row", id: "schedule-row" }, el("label", {}, "When ", when), el("label", {}, "Time zone ", tz));
+	// Each field gets the same heading as the form's sections, so the two read as part of it.
+	const field = (label: string, input: HTMLElement) => el("label", { className: "field" }, el("span", { className: "head", textContent: label }), input);
+	const scheduleRow = el("div", { className: "row fields", id: "schedule-row" }, field("Date and time", when), field("Time zone", tz));
 	const problems = el("ul", { id: "problems", className: "muted" });
 	const sendBtn = el("button", { id: "send", type: "button" });
 	const notice = el("div", { id: "notice", role: "status" });
