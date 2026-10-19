@@ -56,8 +56,8 @@ from chat too.
 ## Good to know
 
 - Channels are connected in BulkPublish itself; refresh the sidebar after adding one.
-- Images and videos are sent from your computer; files on the web aren't fetched.
-  If a Markdown file's first image is a web address, attach a local copy instead.
+- If a Markdown file's first image is a web address, it is downloaded and attached
+  for you (PNG, JPEG, GIF or WebP, up to 20 MB).
 - If publishing fails, nothing is left behind: the post and its upload are removed
   so you can fix the problem and try again.
 

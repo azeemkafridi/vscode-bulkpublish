@@ -1,18 +1,30 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { attachmentFor, ComposePanel, Prefill } from "./compose";
+import { downloadImage } from "./lib/download";
 import { captionFromMarkdown, parseMarkdownShare } from "./lib/markdown";
 import { registerAssistantServer } from "./mcp";
 import { Session } from "./session";
 import { BulkPublishTree, TreeNode } from "./sidebar";
 
-/** Build a compose prefill from a Markdown document. */
-export function markdownPrefill(text: string, docUri: vscode.Uri | undefined): Prefill {
+/**
+ * Build a compose prefill from a Markdown document. An image on the web is
+ * downloaded into `downloads` (the extension's own storage) and attached from there.
+ */
+export async function markdownPrefill(text: string, docUri: vscode.Uri | undefined, downloads?: vscode.Uri): Promise<Prefill> {
 	const md = parseMarkdownShare(text);
 	const prefill: Prefill = { caption: captionFromMarkdown(md) };
 	if (md.image) {
 		if (/^[a-z]+:\/\//i.test(md.image)) {
-			prefill.note = "The first image is on the web, so it wasn't attached. Attach a local copy if you want it in the post.";
+			const got = downloads ? await downloadImage(md.image) : "The first image is on the web, so it wasn't attached.";
+			if (typeof got === "string") prefill.note = got;
+			else {
+				const dir = vscode.Uri.joinPath(downloads!, Date.now().toString(36));
+				const file = vscode.Uri.joinPath(dir, got.filename);
+				await vscode.workspace.fs.createDirectory(dir);
+				await vscode.workspace.fs.writeFile(file, got.bytes);
+				prefill.attachment = { path: file.fsPath, name: got.filename, mimeType: got.mimeType };
+			}
 		} else if (docUri) {
 			const file = md.image.startsWith("/")
 				? vscode.Uri.joinPath(vscode.workspace.getWorkspaceFolder(docUri)?.uri ?? docUri, md.image)
@@ -79,7 +91,11 @@ export async function activate(ctx: vscode.ExtensionContext) {
 		if (!target) return;
 		const doc = await vscode.workspace.openTextDocument(target);
 		if (doc.languageId === "markdown" || /\.(md|mdx|markdown)$/i.test(target.fsPath)) {
-			compose(markdownPrefill(doc.getText(), target));
+			const prefill = await vscode.window.withProgress(
+				{ location: vscode.ProgressLocation.Window, title: "Preparing post…" },
+				() => markdownPrefill(doc.getText(), target, vscode.Uri.joinPath(ctx.globalStorageUri, "downloads")),
+			);
+			compose(prefill);
 		} else {
 			compose({ caption: doc.getText().trim() });
 		}

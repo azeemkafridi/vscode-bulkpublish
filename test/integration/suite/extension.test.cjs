@@ -125,6 +125,21 @@ describe("BulkPublish extension", function () {
 		}
 	});
 
+	it("downloads and attaches a Markdown file's image when it is on the web", async () => {
+		const png = require("fs").readFileSync(require("path").join(vscode.workspace.workspaceFolders[0].uri.fsPath, "img/cover.png"));
+		const img = http.createServer((_q, r) => { r.writeHead(200, { "Content-Type": "image/png" }); r.end(png); });
+		await new Promise((r) => img.listen(0, "127.0.0.1", r));
+		try {
+			const text = `---\ntitle: Web image\n---\n![x](http://127.0.0.1:${img.address().port}/pics/hero.png)`;
+			const dir = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".downloads-test");
+			const pre = await api.markdownPrefill(text, undefined, dir);
+			assert.strictEqual(pre.caption, "Web image");
+			assert.strictEqual(pre.attachment.name, "hero.png");
+			assert.deepStrictEqual(Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.file(pre.attachment.path))), png);
+			await vscode.workspace.fs.delete(dir, { recursive: true });
+		} finally { img.close(); }
+	});
+
 	it("shares a selection", async () => {
 		const doc = await vscode.workspace.openTextDocument({ content: "line one\nshare me please\nline three" });
 		const ed = await vscode.window.showTextDocument(doc);
